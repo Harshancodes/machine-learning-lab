@@ -1,31 +1,27 @@
-import math
-n=int(input("enter the no of leaf nodes"))
-td=int(math.log(n,2))
-print("enter leaf node values from right to left")
-l=[]
-for i in range(n):
-    x=int(input(f'enter {i+1} node val \t'))
-    l.append(x)
-Mi,Ma=-1000,1000
-def ab(cd,ni,maxT,A,B,l):
-    if cd==td:
-        return l[ni]
-    if maxT:
-        best=Mi
-        for i in range(2):
-            val=ab(cd+1,ni*2+i,False,A,B,l)
-            best=max(best,val)
-            A=max(A,best)
-            if B<=A:
-                break
-        return best
-    else:
-        best=Ma
-        for i in range(2):
-            val=ab(cd+1,ni*2+i,True,A,B,l)
-            best=min(best,val)
-            B=min(best,B)
-            if B<=A:
-                break
-        return best
-print(ab(0,0,1,Mi,Ma,l))
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score
+
+# Load the Titanic dataset
+data = pd.read_csv('titanic.csv')
+
+# Preprocessing
+data['Sex'] = data['Sex'].map({'male': 0, 'female': 1})
+data = data.dropna(subset=['Age', 'Fare'])
+
+X = data[['Pclass', 'Sex', 'Age', 'Fare']]
+y = data['Survived']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Naive Bayes classifier
+model = GaussianNB()
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+     
+Accuracy: 0.7674418604651163

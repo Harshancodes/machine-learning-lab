@@ -1,54 +1,67 @@
-def best_first_search(graph,start,goal,heuristic, path=[]):
-    open_list = [(0,start)]
+def h(n):
+    H = {'A': 3, 'B': 4, 'C': 2, 'D': 6, 'G': 0, 'S': 5}
+    return H[n]
+
+def a_star_algorithm(graph, start, goal):
+
+    open_list = [start]
     closed_list = set()
-    closed_list.add(start)
+
+    g = {start:0}
+
+    parents = {start:start}
 
     while open_list:
-        open_list.sort(key = lambda x: heuristic[x[1]], reverse=True)
-        cost, node = open_list.pop()
-        path.append(node)
 
-        if node==goal:
-            return cost, path
+        open_list.sort(key=lambda v: g[v] + h(v), reverse=True)
+        n = open_list.pop()
 
-        closed_list.add(node)
-        for neighbour, neighbour_cost in graph[node]:
-            if neighbour not in closed_list:
-                closed_list.add(node)
-                open_list.append((cost+neighbour_cost, neighbour))
+        # If node is goal then construct the path and return
+        if n == goal:
+            reconst_path = []
 
+            while parents[n] != n:
+                reconst_path.append(n)
+                n = parents[n]
+
+            reconst_path.append(start)
+            reconst_path.reverse()
+
+            print(f'Path found: {reconst_path}')
+            return reconst_path
+
+        for (m, weight) in graph[n]:
+        # if m is first visited, add it to open_list and note its parent
+            if m not in open_list and m not in closed_list:
+                open_list.append(m)
+                parents[m] = n
+                g[m] = g[n] + weight
+
+            # otherwise, check if it's quicker to first visit n, then m
+            # and if it is, update parent and g data
+            # and if the node was in the closed_list, move it to open_list
+            else:
+                if g[m] > g[n] + weight:
+                    g[m] = g[n] + weight
+                    parents[m] = n
+
+                    if m in closed_list:
+                        closed_list.remove(m)
+                        open_list.append(m)
+
+        # Node's neighbours are visited. Now put node to closed list.
+        closed_list.add(n)
+
+    print('Path does not exist!')
     return None
 
 
 graph = {
-    'A': [('B', 11), ('C', 14), ('D',7)],
-    'B': [('A', 11), ('E', 15)],
-    'C': [('A', 14), ('E', 8), ('D',18), ('F',10)],
-    'D': [('A', 7), ('F', 25), ('C',18)],
-    'E': [('B', 15), ('C', 8), ('H',9)],
-    'F': [('G', 20), ('C', 10), ('D',25)],
-    'G': [],
-    'H': [('E',9), ('G',10)]
+    'S': [('A', 1), ('G', 10)],
+    'A': [('B', 2), ('C', 1)],
+    'B': [('D', 5)],
+    'C': [('D', 3),('G', 4)],
+    'D': [('G', 2)]
 }
 
-start = 'A'
-goal = 'G'
-
-heuristic = {
-    'A': 40,
-    'B': 32,
-    'C': 25,
-    'D': 35,
-    'E': 19,
-    'F': 17,
-    'G': 0,
-    'H': 10
-}
-
-result = best_first_search(graph, start, goal, heuristic)
-
-if result:
-    print(f"Minimum cost path from {start} to {goal} is {result[1]}")
-    print(f"Cost: {result[0]}")
-else:
-    print(f"No path from {start} to {goal}")
+a_star_algorithm(graph, 'S', 'G')
